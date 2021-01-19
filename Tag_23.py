@@ -15,7 +15,6 @@ class Computer:
 
   def run(self):
     while True:
-      if self.pc < 0 or self.pc >= len(self.p): return self.r['b']
       pc = self.pc
       progline = self.p[self.pc]
       if len(progline) == 2:
@@ -29,14 +28,13 @@ class Computer:
       elif cmd == 'jie': self.pc += int(a2) if self.r[a1] % 2 == 0 else 0
       elif cmd == 'jio': self.pc += int(a2) if self.r[a1] == 1 else 0
       if self.pc == pc: self.pc += 1
+      if self.pc < 0 or self.pc >= len(self.p): return self.r['b']
 
 
 def solve(puzzle):
-  c = Computer(puzzle, 0)
-  part1 = c.run()
-  c = Computer(puzzle, 1)
-  return part1, c.run()
-
+  c1, c2 = Computer(puzzle, 0), Computer(puzzle, 1)
+  return c1.run(), c2.run()
+  
 
 puzzle = load('Tag_23.txt')
 
