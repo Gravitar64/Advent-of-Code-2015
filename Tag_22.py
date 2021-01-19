@@ -2,52 +2,54 @@ from time import perf_counter as pfc
 import random as rnd
 import copy
 
-class Spell:
-  def __init__(self, mana, damage, heal, armor, mana_add, duration):
+class Actor:
+  def __init__(self, hp, damage, mana):
+    self.hp = hp
+    self.damage = damage
     self.mana = mana
+
+class Spell:
+  def __init__(self, cost, damage, heal, armor, mana_add, timer):
+    self.cost = cost
     self.damage = damage
     self.heal = heal
     self.armor = armor
     self.mana_add = mana_add
-    self.duration = duration
+    self.timer = timer
 
   def __add__(self, other):
     return Spell(0, self.damage + other.damage, self.heal + other.heal, self.armor + other.armor, self.mana_add + other.mana_add, 0)
 
   def __eq__(self, other):
-    return self.mana == other.mana
+    return self.cost == other.cost
 
 def solve(part2=False):
   min_invest = 99999
   for n in range(20_000):
-    active_spells = []
-    boss = [51,9]
-    player = [50,500]
-    invest, players_turn, status = 0, True, Spell(0,0,0,0,0,0)
-    buys = []
-    while player[0] >= 0:
+    boss, player = Actor(51,9,0), Actor(50,0,500)
+    invest, players_turn, active_spells  = 0, True, []
+    while player.hp >= 0:
       if players_turn:
         if part2:
-          player[0] -= 1
-          if player[0] <= 0:
+          player.hp -= 1
+          if player.hp <= 0:
             break
-        valid_spells = [s for s in spells if s.mana <= player[1] and s not in active_spells]
+        valid_spells = [s for s in spells if s.cost <= player.mana and s not in active_spells]
         if not valid_spells: break
-        sp = rnd.choice(valid_spells)
-        player[-1] -= sp.mana
-        invest += sp.mana 
-        active_spells.append(copy.deepcopy(sp))
-        buys.append(sp.mana)
+        sp = copy.deepcopy(rnd.choice(valid_spells))
+        player.mana -= sp.cost
+        invest += sp.cost 
+        active_spells.append(sp)
       status = sum(active_spells,Spell(0,0,0,0,0,0))
-      player[0] += status.heal
-      player[1] += status.mana_add
-      boss[0] -= status.damage
+      player.hp += status.heal
+      player.mana += status.mana_add
+      boss.hp -= status.damage
       if not players_turn:
-        player[0] -= max(1, boss[1] - status.armor)
+        player.hp -= max(1, boss.damage - status.armor)
       for s in active_spells:
-        s.duration -= 1
-      active_spells = [s for s in active_spells if s.duration > 0]
-      if boss[0] <=0  and invest < min_invest:
+        s.timer -= 1
+      active_spells = [s for s in active_spells if s.timer > 0]
+      if boss.hp <=0  and invest < min_invest:
         min_invest = invest
         break        
       players_turn = not players_turn
